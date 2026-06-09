@@ -255,20 +255,31 @@ static void sound_error() {
 }
 
 static void sound_clear() {
-  sound(120, 80);
-  _delay_ms(25);
-  sound(175, 90);
-  _delay_ms(25);
-  sound(220, 170);
+  sound(65, 220);
+  _delay_ms(55);
+  sound(95, 220);
+  _delay_ms(55);
+  sound(125, 220);
+  _delay_ms(95);
+  sound(95, 190);
+  _delay_ms(45);
+  sound(130, 220);
+  _delay_ms(55);
+  sound(160, 220);
+  sound(160, 220);
 }
 
 static void sound_gameover() {
-  for (uint8_t i = 0; i < 4; i++) {
-    sound((i & 1) ? 80 : 180, 70);
-    _delay_ms(45);
+  for (uint8_t i = 0; i < 3; i++) {
+    for (uint8_t j = 0; j < 3; j++) {
+      for (uint8_t k = 0; k < 6; k++) {
+        sound(18, 24);
+        _delay_ms(9);
+      }
+      _delay_ms(85);
+    }
+    _delay_ms(180);
   }
-  _delay_ms(40);
-  sound(35, 220);
 }
 
 static void reset_game_data() {
@@ -595,23 +606,13 @@ static void draw_msg_clear() {
 static void draw_msg_over() {
   clear_screen();
   uint8_t x16 = 8;
-  draw_glyph_16(x16, 2, 49); x16 += 16;               // ゲ
-  draw_glyph_bytes_16(x16, 2, MSG_LONG_MARK); x16 += 16;
-  draw_glyph_16(x16, 2, 32); x16 += 16;               // ム
-  draw_glyph_16(x16, 2, 4); x16 += 16;                // オ
-  draw_glyph_bytes_16(x16, 2, MSG_LONG_MARK); x16 += 16;
-  draw_glyph_16(x16, 2, 61); x16 += 16;               // バ
-  draw_glyph_bytes_16(x16, 2, MSG_LONG_MARK);
-
-  uint8_t x = 32;
-  draw_glyph(x, 5, 5, false); x += 8;                 // カ
-  draw_glyph(x, 5, 1, false); x += 8;                 // イ
-  draw_glyph_bytes(x, 5, ACTION_GLYPHS[2]); x += 8;   // ド
-  draw_glyph(x, 5, 7, false); x += 8;                 // ク
-  draw_glyph(x, 5, 11, false); x += 8;                // シ
-  draw_glyph_bytes(x, 5, MSG_SMALL_TSU); x += 8;      // ッ
-  draw_glyph(x, 5, 66, false); x += 8;                // パ
-  draw_glyph(x, 5, 1, false);                         // イ
+  draw_glyph_16(x16, 3, 49); x16 += 16;               // ゲ
+  draw_glyph_bytes_16(x16, 3, MSG_LONG_MARK); x16 += 16;
+  draw_glyph_16(x16, 3, 32); x16 += 16;               // ム
+  draw_glyph_16(x16, 3, 4); x16 += 16;                // オ
+  draw_glyph_bytes_16(x16, 3, MSG_LONG_MARK); x16 += 16;
+  draw_glyph_16(x16, 3, 61); x16 += 16;               // バ
+  draw_glyph_bytes_16(x16, 3, MSG_LONG_MARK);
 }
 
 static void on_judge() {
@@ -621,17 +622,19 @@ static void on_judge() {
 
   if (matches_correct()) {
     state = STATE_CLEAR;
-    sound_clear();
     present_screen(draw_msg_clear);
     screen_dirty = false;
+    sound_clear();
     return;
   }
 
   wrong_count++;
   if (wrong_count >= MAX_WRONG) {
     state = STATE_GAMEOVER;
-    sound_gameover();
     present_screen(draw_msg_over);
+    screen_dirty = false;
+    sound_gameover();
+    return;
   } else {
     state = STATE_ERROR;
     sound_error();
