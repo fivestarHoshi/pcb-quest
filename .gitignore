@@ -1,0 +1,19 @@
+.DS_Store
+*.swp
+*~
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Arduino / AVR build outputs and local firmware dumps
+*.elf
+*.eep
+*.hex
+*.lst
+*.map
+build/
+backups/
+
+# Local design/source screenshots for generated title assets
+assets/
