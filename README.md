@@ -10,7 +10,14 @@ TinyJoypad / ATtiny85 向けの4文字解読ゲーム用ファームウェアで
 - 正解時はクリア画面、失敗時はエラー画面
 - ライフは3つ。3回失敗でゲームオーバー
 - ライフ表示は右上のハート
-- タイトル、入力、エラー、クリア、ゲームオーバーに効果音あり
+- タイトル、入力、エラーに効果音あり
+- ドラム回転はカチカチ音、編集開始/確定にポップ音
+- 判定時はドラムロール+スロット順次スキャンのタメ演出
+- クリア時は画面フラッシュ+ファンファーレ+キラキラ演出
+- ゲームオーバー時は警報フラッシュ → インベーダー増殖 → 暗転 → 下降音の終焉演出
+- クリア/ゲームオーバー画面でFIREを押すとタイトルに戻る（リプレイ可能）
+- タイトル画面は約4秒ごとに2回点滅して挑戦者を誘う
+- 残りライフ1のときはハートが点滅
 - EEPROM保存なし。電源OFF/ONで初期状態に戻る
 
 ## 操作
@@ -45,8 +52,7 @@ pcb-quest/
 ├── firmware/pcb_quest/
 │   ├── pcb_quest.ino      # メインファームウェア
 │   ├── answer.h           # 正解4文字
-│   ├── kana_table.h       # カナホイール順序
-│   ├── kana_glyphs.h      # 8x8グリフ
+│   ├── kana_glyphs.h      # 8x8グリフとカナホイール順序
 │   └── title_intro.h      # 起動画面ビットマップ
 ├── tools/
 │   ├── gen_kana_glyphs.py
@@ -56,6 +62,7 @@ pcb-quest/
 ├── scripts/
 │   ├── burn_fuses_16mhz_isp.sh
 │   └── flash_isp.sh
+├── Makefile
 └── docs/
     └── venue_template.md
 ```
@@ -63,6 +70,13 @@ pcb-quest/
 `assets/` と `backups/` はローカル作業用としてGit管理外です。
 
 ## ビルド
+
+```bash
+make gen    # グリフ・タイトル画像を再生成
+make build  # ファームウェアをコンパイル
+```
+
+個別に実行する場合:
 
 ```bash
 python3 tools/gen_kana_glyphs.py
@@ -75,10 +89,22 @@ arduino-cli compile --fqbn attiny:avr:ATtinyX5:cpu=attiny85,clock=internal16 fir
 初回、または動作が極端に遅い場合は、16MHz用のヒューズを書きます。
 
 ```bash
+make fuses PROGRAMMER=arduinoasisp PORT=/dev/cu.usbserial-A5069RR4
+```
+
+または:
+
+```bash
 bash scripts/burn_fuses_16mhz_isp.sh arduinoasisp /dev/cu.usbserial-A5069RR4
 ```
 
 通常のファーム更新:
+
+```bash
+make flash PROGRAMMER=arduinoasisp PORT=/dev/cu.usbserial-A5069RR4
+```
+
+または:
 
 ```bash
 bash scripts/flash_isp.sh arduinoasisp /dev/cu.usbserial-A5069RR4
@@ -114,7 +140,7 @@ lfuse = 0xF1
 static const uint8_t CORRECT_ANSWER[4] PROGMEM = {0, 0, 0, 0};
 ```
 
-インデックスは `firmware/pcb_quest/kana_table.h` の順序です。
+インデックスは `firmware/pcb_quest/kana_glyphs.h` の `GLYPH_*` 定数（カナホイール順）です。例: `GLYPH_A`(ア)=0、`GLYPH_N`(ン)=45、`GLYPH_GO`(ゴ)=50、`GLYPH_D0`(0)=71。清音(0-45)、濁音・半濁音(46-70)、数字(71-80)の順です。
 
 ## 実機チェック
 
@@ -124,5 +150,5 @@ static const uint8_t CORRECT_ANSWER[4] PROGMEM = {0, 0, 0, 0};
 - UP/DOWN単発で1文字移動、長押しで高速移動する
 - 4文字すべて埋まると `カイドク!` が表示される
 - 不正解でエラー画面、FIREで入力画面へ戻る
-- 3回不正解でゲームオーバー
-- 正解でクリア画面
+- 3回不正解で警報フラッシュ → インベーダー増殖 → ゲームオーバー画面+下降音
+- 正解で画面フラッシュ → クリア画面+ファンファーレ+キラキラ点滅

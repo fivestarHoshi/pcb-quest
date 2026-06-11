@@ -96,6 +96,27 @@ def luminance(rgb: tuple[int, int, int]) -> float:
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+def cell_sample_rect(
+    width: int,
+    height: int,
+    x0: float,
+    y0: float,
+    cell_w: float,
+    cell_h: float,
+    inset: float,
+) -> tuple[int, int, int, int]:
+    sx0 = int(round(x0 + cell_w * inset))
+    sx1 = int(round(x0 + cell_w * (1.0 - inset)))
+    sy0 = int(round(y0 + cell_h * inset))
+    sy1 = int(round(y0 + cell_h * (1.0 - inset)))
+
+    sx0 = max(0, min(width - 1, sx0))
+    sx1 = max(sx0 + 1, min(width, sx1))
+    sy0 = max(0, min(height - 1, sy0))
+    sy1 = max(sy0 + 1, min(height, sy1))
+    return sx0, sx1, sy0, sy1
+
+
 def cell_luma(
     pixels: list[tuple[int, int, int]],
     width: int,
@@ -106,15 +127,7 @@ def cell_luma(
     cell_h: float,
     inset: float,
 ) -> float:
-    sx0 = int(round(x0 + cell_w * inset))
-    sx1 = int(round(x0 + cell_w * (1.0 - inset)))
-    sy0 = int(round(y0 + cell_h * inset))
-    sy1 = int(round(y0 + cell_h * (1.0 - inset)))
-
-    sx0 = max(0, min(width - 1, sx0))
-    sx1 = max(sx0 + 1, min(width, sx1))
-    sy0 = max(0, min(height - 1, sy0))
-    sy1 = max(sy0 + 1, min(height, sy1))
+    sx0, sx1, sy0, sy1 = cell_sample_rect(width, height, x0, y0, cell_w, cell_h, inset)
 
     total = 0.0
     count = 0
@@ -137,15 +150,7 @@ def cell_black_ratio(
     inset: float,
     threshold: float,
 ) -> float:
-    sx0 = int(round(x0 + cell_w * inset))
-    sx1 = int(round(x0 + cell_w * (1.0 - inset)))
-    sy0 = int(round(y0 + cell_h * inset))
-    sy1 = int(round(y0 + cell_h * (1.0 - inset)))
-
-    sx0 = max(0, min(width - 1, sx0))
-    sx1 = max(sx0 + 1, min(width, sx1))
-    sy0 = max(0, min(height - 1, sy0))
-    sy1 = max(sy0 + 1, min(height, sy1))
+    sx0, sx1, sy0, sy1 = cell_sample_rect(width, height, x0, y0, cell_w, cell_h, inset)
 
     black = 0
     count = 0

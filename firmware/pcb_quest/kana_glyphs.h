@@ -5,13 +5,98 @@
 #include <Arduino.h>
 
 #define KANA_COUNT 81
+#define KANA_DRUM_LEN KANA_COUNT
 #define GLYPH_BYTES 8
 
+// Drum order:
+// アイウエオ カキクケコ サシスセソ タチツテト ナニヌネノ
+// ハヒフヘホ マミムメモ ヤユヨ ラリルレロ ワヲン
+// ガギグゲゴ ザジズゼゾ ダヂヅデド バビブベボ パピプペポ
+// 0123456789
+
 enum GlyphId : uint8_t {
-  GLYPH_QUESTION = KANA_COUNT,
+  GLYPH_A = 0,
+  GLYPH_I = 1,
+  GLYPH_U = 2,
+  GLYPH_E = 3,
+  GLYPH_O = 4,
+  GLYPH_KA = 5,
+  GLYPH_KI = 6,
+  GLYPH_KU = 7,
+  GLYPH_KE = 8,
+  GLYPH_KO = 9,
+  GLYPH_SA = 10,
+  GLYPH_SHI = 11,
+  GLYPH_SU = 12,
+  GLYPH_SE = 13,
+  GLYPH_SO = 14,
+  GLYPH_TA = 15,
+  GLYPH_CHI = 16,
+  GLYPH_TSU = 17,
+  GLYPH_TE = 18,
+  GLYPH_TO = 19,
+  GLYPH_NA = 20,
+  GLYPH_NI = 21,
+  GLYPH_NU = 22,
+  GLYPH_NE = 23,
+  GLYPH_NO = 24,
+  GLYPH_HA = 25,
+  GLYPH_HI = 26,
+  GLYPH_FU = 27,
+  GLYPH_HE = 28,
+  GLYPH_HO = 29,
+  GLYPH_MA = 30,
+  GLYPH_MI = 31,
+  GLYPH_MU = 32,
+  GLYPH_ME = 33,
+  GLYPH_MO = 34,
+  GLYPH_YA = 35,
+  GLYPH_YU = 36,
+  GLYPH_YO = 37,
+  GLYPH_RA = 38,
+  GLYPH_RI = 39,
+  GLYPH_RU = 40,
+  GLYPH_RE = 41,
+  GLYPH_RO = 42,
+  GLYPH_WA = 43,
+  GLYPH_WO = 44,
+  GLYPH_N = 45,
+  GLYPH_GA = 46,
+  GLYPH_GI = 47,
+  GLYPH_GU = 48,
+  GLYPH_GE = 49,
   GLYPH_GO = 50,
-  GLYPH_HAN = KANA_COUNT + 1,
-  GLYPH_TEI = KANA_COUNT + 2,
+  GLYPH_ZA = 51,
+  GLYPH_JI = 52,
+  GLYPH_ZU = 53,
+  GLYPH_ZE = 54,
+  GLYPH_ZO = 55,
+  GLYPH_DA = 56,
+  GLYPH_DI = 57,
+  GLYPH_DU = 58,
+  GLYPH_DE = 59,
+  GLYPH_DO = 60,
+  GLYPH_BA = 61,
+  GLYPH_BI = 62,
+  GLYPH_BU = 63,
+  GLYPH_BE = 64,
+  GLYPH_BO = 65,
+  GLYPH_PA = 66,
+  GLYPH_PI = 67,
+  GLYPH_PU = 68,
+  GLYPH_PE = 69,
+  GLYPH_PO = 70,
+  GLYPH_D0 = 71,
+  GLYPH_D1 = 72,
+  GLYPH_D2 = 73,
+  GLYPH_D3 = 74,
+  GLYPH_D4 = 75,
+  GLYPH_D5 = 76,
+  GLYPH_D6 = 77,
+  GLYPH_D7 = 78,
+  GLYPH_D8 = 79,
+  GLYPH_D9 = 80,
+  GLYPH_QUESTION = KANA_COUNT,
 };
 
 // Column-major page bytes (Misaki / SSD1306 native layout).
@@ -180,9 +265,5 @@ static const uint8_t KANA_GLYPHS[][GLYPH_BYTES] PROGMEM = {
   { 0x00, 0x26, 0x49, 0x49, 0x49, 0x49, 0x3E, 0x00 },
   // ?
   { 0x00, 0x02, 0x01, 0x51, 0x09, 0x09, 0x06, 0x00 },
-  // 判
-  { 0x2A, 0x28, 0x7F, 0x28, 0x2A, 0x40, 0x7F, 0x00 },
-  // 定
-  { 0x46, 0x32, 0x46, 0x7F, 0x56, 0x52, 0x46, 0x00 },
 };
 
