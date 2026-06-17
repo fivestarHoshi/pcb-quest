@@ -94,6 +94,11 @@ static const uint8_t INVADER_GLYPH[8] PROGMEM = {
   0x78, 0x1C, 0x77, 0x3E, 0x3E, 0x77, 0x1C, 0x78
 };
 
+// Spawn interval per doubling wave (1, 2, 4, ... 64 invaders)
+static const uint8_t INVADER_WAVE_WAIT[7] PROGMEM = {
+  100, 70, 46, 30, 18, 10, 4
+};
+
 #define OLED_CMD_INVERT 0xA7
 #define OLED_CMD_NORMAL 0xA6
 #define OLED_CMD_START_LINE 0x40
@@ -519,8 +524,10 @@ static void draw_slot(uint8_t i) {
   uint8_t bottom[SLOT_BOX_W] = {0};
   compose_glyph_2x(top, bottom, 0, &KANA_GLYPHS[gid][0]);
 
+  // 2px underline; rows 14-15 are safe because Misaki kana never use
+  // source row 7 (which would scale into them)
   if ((cursor_idx == i) && !edit_mode) {
-    for (uint8_t c = 0; c < SLOT_BOX_W; c++) bottom[c] |= 0x80;
+    for (uint8_t c = 0; c < SLOT_BOX_W; c++) bottom[c] |= 0xC0;
   }
 
   if (((cursor_idx == i) && edit_mode) || (force_invert_slot == i)) {
@@ -663,15 +670,22 @@ static void gameover_sequence() {
     play_note(NOTE_ALARM_LO, 170);
   }
 
-  // Stage 2: invaders erode the screen, accelerating
-  uint8_t wait = 70;
-  for (uint8_t i = 0; i < 56; i++) {
-    uint8_t x = (rnd() & 0x0F) << 3;
-    uint8_t page = rnd() & 0x07;
-    draw_glyph_bytes(x, page, INVADER_GLYPH);
-    play_note(250 + ((uint16_t)(rnd() & 0x3F) << 4), 14);
-    wait_ms(wait);
-    if (wait > 4) wait -= 2;
+  // Stage 2: invaders multiply in doubling waves (1, 2, 4 ... 64) until the
+  // screen is consumed. A stride coprime with 128 visits every 8x8 cell once,
+  // so there are no duplicate (invisible) spawns and coverage is total.
+  // Noise pitch drifts lower as the screen fills.
+  uint8_t spawn = 0;
+  for (uint8_t wave = 0; wave < 7; wave++) {
+    uint8_t count = 1 << wave;
+    uint8_t wait = pgm_read_byte(&INVADER_WAVE_WAIT[wave]);
+    for (uint8_t k = 0; k < count; k++) {
+      uint8_t cell = (uint8_t)(spawn * 37) & 0x7F;
+      draw_glyph_bytes((cell & 0x0F) << 3, cell >> 4, INVADER_GLYPH);
+      play_note(300 + ((uint16_t)spawn << 3) + ((uint16_t)(rnd() & 0x3F) << 2), 14);
+      wait_ms(wait);
+      spawn++;
+    }
+    wait_ms(90);  // a breath before the next, bigger wave
   }
 
   SSD1306.ssd1306_send_command(OLED_CMD_INVERT);
